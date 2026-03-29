@@ -3,6 +3,10 @@ __pycache__/
 *.pyc
 .venv/
 
+# Node
+node_modules/
+dist/
+
 # Slide files (copyrighted by speakers - run the scripts to download)
 *.pdf
 *.pptx
