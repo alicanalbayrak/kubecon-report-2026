@@ -136,3 +136,16 @@ export async function loadAllEvents(): Promise<{
 
   return { events, conferenceInfo };
 }
+
+import type { EnrichedData } from "./enriched-types";
+
+export async function loadEnrichedData(): Promise<EnrichedData> {
+  const base = import.meta.env.BASE_URL;
+  const res = await fetch(`${base}data/enriched.json`);
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch enriched data: ${res.status} ${res.statusText}`
+    );
+  }
+  return res.json();
+}
