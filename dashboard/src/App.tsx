@@ -15,6 +15,11 @@ import SearchBar from "./components/SearchBar";
 import ActiveFilters from "./components/ActiveFilters";
 import TabNav, { type TabId } from "./components/TabNav";
 import TopKeywordsChart from "./components/charts/TopKeywordsChart";
+import EmergingQuadrant from "./components/charts/EmergingQuadrant";
+import AIPenetrationChart from "./components/charts/AIPenetrationChart";
+import OrgLeaderboardChart from "./components/charts/OrgLeaderboardChart";
+import EndUserVendorChart from "./components/charts/EndUserVendorChart";
+import ArchitecturePatternsChart from "./components/charts/ArchitecturePatternsChart";
 import CNCFComponentsChart from "./components/charts/CNCFComponentsChart";
 import TrendingTopicsChart from "./components/charts/TrendingTopicsChart";
 import TrackDistribution from "./components/charts/TrackDistribution";
@@ -46,8 +51,14 @@ function OverviewTab({ sourceFiltered, filteredEvents }: { sourceFiltered: Event
 
 function DeepAnalysisTab({ enriched }: { enriched: EnrichedData }) {
   return (
-    <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
-      Deep Analysis views coming soon...
+    <div className="mt-6 space-y-6">
+      <EmergingQuadrant enriched={enriched} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AIPenetrationChart enriched={enriched} />
+        <OrgLeaderboardChart enriched={enriched} />
+        <EndUserVendorChart enriched={enriched} />
+        <ArchitecturePatternsChart enriched={enriched} />
+      </div>
     </div>
   );
 }
