@@ -12,5 +12,8 @@ dist/
 *.pptx
 *.ppt
 
+# Analysis cache
+analysis/cache/
+
 # OS
 .DS_Store

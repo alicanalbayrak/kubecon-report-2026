@@ -1,0 +1,8 @@
+pymupdf>=1.25.0
+python-pptx>=1.0.0
+pandas>=2.2.0
+numpy>=2.0.0
+scikit-learn>=1.6.0
+nltk>=3.9.0
+tqdm>=4.67.0
+thefuzz>=0.22.0
