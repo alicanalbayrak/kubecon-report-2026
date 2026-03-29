@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Event, ConferenceInfo } from "./lib/types";
-import { loadAllEvents } from "./lib/data-loader";
+import type { EnrichedData } from "./lib/enriched-types";
+import { loadAllEvents, loadEnrichedData } from "./lib/data-loader";
 import {
   FilterProvider,
   useFilter,
@@ -12,6 +13,7 @@ import HeroBanner from "./components/HeroBanner";
 import SourceToggle from "./components/SourceToggle";
 import SearchBar from "./components/SearchBar";
 import ActiveFilters from "./components/ActiveFilters";
+import TabNav, { type TabId } from "./components/TabNav";
 import TopKeywordsChart from "./components/charts/TopKeywordsChart";
 import CNCFComponentsChart from "./components/charts/CNCFComponentsChart";
 import TrendingTopicsChart from "./components/charts/TrendingTopicsChart";
@@ -21,13 +23,53 @@ import BigramTable from "./components/tables/BigramTable";
 import SpeakerLeaderboard from "./components/tables/SpeakerLeaderboard";
 import SessionList from "./components/tables/SessionList";
 
+function OverviewTab({ sourceFiltered, filteredEvents }: { sourceFiltered: Event[]; filteredEvents: Event[] }) {
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <TopKeywordsChart events={sourceFiltered} />
+        <CNCFComponentsChart events={sourceFiltered} />
+        <TrendingTopicsChart events={sourceFiltered} />
+        <TrackDistribution events={sourceFiltered} />
+        <ExperienceLevelDonut events={sourceFiltered} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <BigramTable events={sourceFiltered} />
+        <SpeakerLeaderboard events={sourceFiltered} />
+      </div>
+
+      <SessionList events={filteredEvents} />
+    </>
+  );
+}
+
+function DeepAnalysisTab({ enriched }: { enriched: EnrichedData }) {
+  return (
+    <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
+      Deep Analysis views coming soon...
+    </div>
+  );
+}
+
+function NarrativeTab({ enriched }: { enriched: EnrichedData }) {
+  return (
+    <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
+      Narrative views coming soon...
+    </div>
+  );
+}
+
 function AppContent({
   data,
+  enriched,
 }: {
   data: { events: Event[]; conferenceInfo: ConferenceInfo };
+  enriched: EnrichedData;
 }) {
   const { filters } = useFilter();
   const filteredEvents = useFilteredEvents(data.events);
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   const sourceFiltered = useMemo(() => {
     if (filters.source === "all") return data.events;
@@ -49,20 +91,17 @@ function AppContent({
         <ActiveFilters />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <TopKeywordsChart events={sourceFiltered} />
-        <CNCFComponentsChart events={sourceFiltered} />
-        <TrendingTopicsChart events={sourceFiltered} />
-        <TrackDistribution events={sourceFiltered} />
-        <ExperienceLevelDonut events={sourceFiltered} />
-      </div>
+      <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <BigramTable events={sourceFiltered} />
-        <SpeakerLeaderboard events={sourceFiltered} />
-      </div>
-
-      <SessionList events={filteredEvents} />
+      {activeTab === "overview" && (
+        <OverviewTab sourceFiltered={sourceFiltered} filteredEvents={filteredEvents} />
+      )}
+      {activeTab === "deep-analysis" && (
+        <DeepAnalysisTab enriched={enriched} />
+      )}
+      {activeTab === "narrative" && (
+        <NarrativeTab enriched={enriched} />
+      )}
     </>
   );
 }
@@ -72,12 +111,16 @@ function App() {
     events: Event[];
     conferenceInfo: ConferenceInfo;
   } | null>(null);
+  const [enriched, setEnriched] = useState<EnrichedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadAllEvents()
-      .then(setData)
+    Promise.all([loadAllEvents(), loadEnrichedData()])
+      .then(([eventsData, enrichedData]) => {
+        setData(eventsData);
+        setEnriched(enrichedData);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -112,12 +155,12 @@ function App() {
     );
   }
 
-  if (!data) return null;
+  if (!data || !enriched) return null;
 
   return (
     <FilterProvider>
       <Layout>
-        <AppContent data={data} />
+        <AppContent data={data} enriched={enriched} />
       </Layout>
     </FilterProvider>
   );
