@@ -54,9 +54,23 @@ ALIASES = {
     "DaoCloud": "DaoCloud",
     "Tetrate": "Tetrate",
     "Tetrate.io": "Tetrate",
+    "Data Dog": "Datadog",
+    "Grafana Laba": "Grafana Labs",
+    "Isovalent at Cisco": "Cisco",
+    "HUAWEI": "Huawei",
+    "Bloomberg LP": "Bloomberg",
+    "Honeycomb.io": "Honeycomb",
+    "The Linux Foundation": "Linux Foundation",
 }
 
 FUZZY_THRESHOLD = 85
+
+# Names that are clearly not companies — extracted from title parsing noise
+NOISE_NAMES = {
+    "Maintainer", "Independent", "Ltd.", "Inc.", "Co-Chairs",
+    "Program Committee Co-Chairs", "Program Committee Co-Chair",
+    "Co.", "LLC",
+}
 
 SKIP_PATTERNS = [
     re.compile(r"(?i)^(coffee|lunch|break|keynote|registration|party|social|reception)"),
@@ -91,6 +105,10 @@ def extract_company_from_speaker_title(speaker_title: str) -> str:
         return ""
     company = speaker_title.rsplit(",", 1)[-1].strip()
     return company
+
+
+def is_noise(name: str) -> bool:
+    return name in NOISE_NAMES or len(name) <= 2
 
 
 def normalize(name: str) -> str:
@@ -139,11 +157,12 @@ def main():
         companies = set()
         title_companies = extract_company_from_title(event["title"])
         for c in title_companies:
-            companies.add(c)
+            if not is_noise(c):
+                companies.add(c)
         if not companies:
             for speaker in event.get("speakers", []):
                 c = extract_company_from_speaker_title(speaker.get("title", ""))
-                if c:
+                if c and not is_noise(c):
                     companies.add(c)
         raw_companies_per_event[event["id"]] = list(companies)
         all_raw_names.update(companies)
