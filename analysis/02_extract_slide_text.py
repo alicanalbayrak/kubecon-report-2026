@@ -43,6 +43,10 @@ def collect_slide_paths() -> list[tuple[str, str]]:
     return paths
 
 
+def _failed(error: str) -> dict:
+    return {"text": "", "page_count": 0, "char_count": 0, "success": False, "error": error}
+
+
 def extract_pdf(path: str) -> dict:
     try:
         doc = fitz.open(path)
@@ -59,7 +63,7 @@ def extract_pdf(path: str) -> dict:
         doc.close()
         return result
     except Exception as e:
-        return {"text": "", "page_count": 0, "char_count": 0, "success": False, "error": str(e)}
+        return _failed(str(e))
 
 
 def extract_pptx(path: str) -> dict:
@@ -83,7 +87,7 @@ def extract_pptx(path: str) -> dict:
             "success": True,
         }
     except Exception as e:
-        return {"text": "", "page_count": 0, "char_count": 0, "success": False, "error": str(e)}
+        return _failed(str(e))
 
 
 def _extract_worker(abs_path, ext, queue):
@@ -118,12 +122,12 @@ def main():
         if proc.is_alive():
             proc.kill()
             proc.join()
-            result = {"text": "", "page_count": 0, "char_count": 0, "success": False, "error": "Timed out"}
+            result = _failed("Timed out")
             tqdm.write(f"  TIMEOUT ({FILE_TIMEOUT}s): {local_path}")
         elif not q.empty():
             result = q.get()
         else:
-            result = {"text": "", "page_count": 0, "char_count": 0, "success": False, "error": "Worker crashed"}
+            result = _failed("Worker crashed")
 
         results[local_path] = result
         if result["success"] and result["char_count"] < LOW_TEXT_THRESHOLD:

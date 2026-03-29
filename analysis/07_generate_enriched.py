@@ -50,46 +50,43 @@ def load_cache():
     return data
 
 
-def compute_ai_penetration(events, slide_texts):
-    by_track = defaultdict(lambda: {"total": 0, "ai_count": 0})
+def compute_ai_and_arch_patterns(events, slide_texts):
+    """Single pass over events to compute both AI penetration and architecture patterns."""
+    ai_by_track = defaultdict(lambda: {"total": 0, "ai_count": 0})
+    arch_by_track = defaultdict(Counter)
+
     for event in events:
         cat = event["category"]
-        by_track[cat]["total"] += 1
+        ai_by_track[cat]["total"] += 1
+
         parts = [event.get("title", ""), event.get("description", "")]
         for fi in event.get("files", []):
             slide = slide_texts.get(fi.get("local_path", ""), {})
             if slide.get("text"):
                 parts.append(slide["text"])
         full_text = " ".join(parts)
+
         if AI_TERMS.search(full_text):
-            by_track[cat]["ai_count"] += 1
-    result = {}
-    for cat, counts in sorted(by_track.items()):
+            ai_by_track[cat]["ai_count"] += 1
+
+        for pattern_name, regex in ARCH_PATTERNS.items():
+            if regex.search(full_text):
+                arch_by_track[cat][pattern_name] += 1
+
+    ai_result = {}
+    for cat, counts in sorted(ai_by_track.items()):
         if counts["total"] > 0:
-            result[cat] = {
+            ai_result[cat] = {
                 "total_events": counts["total"],
                 "ai_events": counts["ai_count"],
                 "ai_pct": round(counts["ai_count"] / counts["total"] * 100, 1),
             }
-    return result
 
+    arch_result = {}
+    for cat in sorted(arch_by_track.keys()):
+        arch_result[cat] = dict(arch_by_track[cat].most_common())
 
-def compute_architecture_patterns(events, slide_texts):
-    by_track = defaultdict(lambda: Counter())
-    for event in events:
-        parts = [event.get("title", ""), event.get("description", "")]
-        for fi in event.get("files", []):
-            slide = slide_texts.get(fi.get("local_path", ""), {})
-            if slide.get("text"):
-                parts.append(slide["text"])
-        full_text = " ".join(parts)
-        for pattern_name, regex in ARCH_PATTERNS.items():
-            if regex.search(full_text):
-                by_track[event["category"]][pattern_name] += 1
-    result = {}
-    for cat in sorted(by_track.keys()):
-        result[cat] = dict(by_track[cat].most_common())
-    return result
+    return ai_result, arch_result
 
 
 def build_enriched_events(events, event_keywords, slide_texts):
@@ -128,11 +125,8 @@ def main():
     trend_findings = cache["trend_findings"]
     org_findings = cache["org_findings"]
 
-    print("Computing AI penetration heatmap...")
-    ai_penetration = compute_ai_penetration(events, slide_texts)
-
-    print("Computing architecture patterns...")
-    arch_patterns = compute_architecture_patterns(events, slide_texts)
+    print("Computing AI penetration and architecture patterns...")
+    ai_penetration, arch_patterns = compute_ai_and_arch_patterns(events, slide_texts)
 
     print("Building enriched events...")
     enriched_events = build_enriched_events(events, event_keywords, slide_texts)

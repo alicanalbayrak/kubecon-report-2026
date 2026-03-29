@@ -107,21 +107,31 @@ def category_depth_matrix(events, slide_texts):
     return matrix
 
 
+def build_full_text(event, slide_texts):
+    parts = [event.get("title", ""), event.get("description", "")]
+    for fi in event.get("files", []):
+        slide = slide_texts.get(fi.get("local_path", ""), {})
+        if slide.get("text"):
+            parts.append(slide["text"])
+    return " ".join(parts)
+
+
+# Pre-compile tech term regexes once
+TECH_REGEXES = {name: re.compile(pattern, re.IGNORECASE) for name, pattern in TECH_TERMS.items()}
+
+
 def tech_mention_frequency(events, slide_texts):
-    def get_full_text(event):
-        parts = [event.get("description", ""), event.get("title", "")]
-        for fi in event.get("files", []):
-            slide = slide_texts.get(fi.get("local_path", ""), {})
-            if slide.get("text"):
-                parts.append(slide["text"])
-        return " ".join(parts).lower()
+    # Pre-build full text per event once
+    event_texts = {e["source"]: [] for e in events}
+    for e in events:
+        event_texts.setdefault(e["source"], []).append(build_full_text(e, slide_texts).lower())
+
     results = {"main": {}, "colocated": {}}
     for source in ["main", "colocated"]:
-        source_events = [e for e in events if e["source"] == source]
-        total = len(source_events)
-        for tech_name, pattern in TECH_TERMS.items():
-            regex = re.compile(pattern, re.IGNORECASE)
-            count = sum(1 for e in source_events if regex.search(get_full_text(e)))
+        texts = event_texts.get(source, [])
+        total = len(texts)
+        for tech_name, regex in TECH_REGEXES.items():
+            count = sum(1 for t in texts if regex.search(t))
             results[source][tech_name] = {
                 "count": count,
                 "pct": round(count / total * 100, 1) if total else 0,
