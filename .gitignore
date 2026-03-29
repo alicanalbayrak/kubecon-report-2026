@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Slide files (copyrighted by speakers - run the scripts to download)
+*.pdf
+*.pptx
+*.ppt
+
+# OS
+.DS_Store
