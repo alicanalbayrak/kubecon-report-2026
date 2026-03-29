@@ -16,24 +16,21 @@ interface Props {
   enriched: EnrichedData;
 }
 
-const PATTERNS = ["Gateway", "Operator", "Sidecar", "GitOps", "Service Mesh", "Multi-Cluster"];
-
 export default function ArchitecturePatternsChart({ enriched }: Props) {
   const theme = useChartTheme();
 
   const data = useMemo(() => {
-    const totals: Record<string, number> = {};
-    for (const pattern of PATTERNS) {
-      totals[pattern] = 0;
-    }
-    for (const trackPatterns of Object.values(enriched.architecture_patterns.by_track)) {
-      for (const pattern of PATTERNS) {
-        totals[pattern] += trackPatterns[pattern] ?? 0;
+    const byTrack = enriched.architecture_patterns.by_track;
+    const patternTotals = new Map<string, number>();
+    for (const trackPatterns of Object.values(byTrack)) {
+      for (const [pattern, count] of Object.entries(trackPatterns)) {
+        patternTotals.set(pattern, (patternTotals.get(pattern) ?? 0) + count);
       }
     }
-    return Object.entries(totals)
+    return [...patternTotals.entries()]
       .map(([pattern, count]) => ({ pattern, count }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // top 10 patterns
   }, [enriched]);
 
   return (

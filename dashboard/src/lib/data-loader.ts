@@ -6,6 +6,7 @@ import type {
   ExperienceLevel,
   ConferenceInfo,
 } from "./types";
+import type { EnrichedData } from "./enriched-types";
 
 /**
  * Strip leading non-alphanumeric characters (emoji prefixes, symbols, etc.)
@@ -136,8 +137,6 @@ export async function loadAllEvents(): Promise<{
 
   return { events, conferenceInfo };
 }
-
-import type { EnrichedData } from "./enriched-types";
 
 export async function loadEnrichedData(): Promise<EnrichedData> {
   const base = import.meta.env.BASE_URL;

@@ -162,24 +162,6 @@ export default function EmergingQuadrant({ enriched }: Props) {
           />
         </ScatterChart>
       </ResponsiveContainer>
-      <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-violet-400 opacity-60" />
-          Niche Emerging (low freq, low maturity)
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-violet-400 opacity-60" />
-          Broad Emerging (high freq, low maturity)
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-violet-400 opacity-60" />
-          Niche Established (low freq, high maturity)
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-violet-400 opacity-60" />
-          Broad Established (high freq, high maturity)
-        </span>
-      </div>
     </ChartCard>
   );
 }

@@ -88,7 +88,7 @@ function AppContent({
   enriched,
 }: {
   data: { events: Event[]; conferenceInfo: ConferenceInfo };
-  enriched: EnrichedData;
+  enriched: EnrichedData | null;
 }) {
   const { filters } = useFilter();
   const filteredEvents = useFilteredEvents(data.events);
@@ -120,10 +120,18 @@ function AppContent({
         <OverviewTab sourceFiltered={sourceFiltered} filteredEvents={filteredEvents} />
       )}
       {activeTab === "deep-analysis" && (
-        <DeepAnalysisTab enriched={enriched} />
+        enriched ? <DeepAnalysisTab enriched={enriched} /> : (
+          <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
+            Enriched data not available
+          </div>
+        )
       )}
       {activeTab === "narrative" && (
-        <NarrativeTab enriched={enriched} />
+        enriched ? <NarrativeTab enriched={enriched} /> : (
+          <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
+            Enriched data not available
+          </div>
+        )
       )}
     </>
   );
@@ -139,13 +147,13 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([loadAllEvents(), loadEnrichedData()])
-      .then(([eventsData, enrichedData]) => {
-        setData(eventsData);
-        setEnriched(enrichedData);
-      })
+    loadAllEvents()
+      .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    loadEnrichedData()
+      .then(setEnriched)
+      .catch(() => {}); // enriched is optional — tabs show fallback
   }, []);
 
   if (loading) {
@@ -178,7 +186,7 @@ function App() {
     );
   }
 
-  if (!data || !enriched) return null;
+  if (!data) return null;
 
   return (
     <FilterProvider>
