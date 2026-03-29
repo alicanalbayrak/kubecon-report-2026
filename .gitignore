@@ -15,5 +15,10 @@ dist/
 # Analysis cache
 analysis/cache/
 
+# Local tooling artifacts
+.playwright-mcp/
+.superpowers/
+docs/superpowers/
+
 # OS
 .DS_Store
