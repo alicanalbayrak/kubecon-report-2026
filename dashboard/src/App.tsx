@@ -69,7 +69,14 @@ function DeepAnalysisTab({ enriched }: { enriched: EnrichedData }) {
 }
 
 function NarrativeTab({ enriched }: { enriched: EnrichedData }) {
-  const { cross_cutting } = enriched.semantic_analysis;
+  const cross_cutting = enriched.semantic_analysis?.cross_cutting;
+  if (!cross_cutting) {
+    return (
+      <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
+        Semantic analysis data not available
+      </div>
+    );
+  }
   return (
     <div className="mt-6 space-y-6">
       <NarrativeArc arc={cross_cutting.narrative_arc} />

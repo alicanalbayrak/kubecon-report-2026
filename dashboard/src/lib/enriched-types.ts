@@ -132,5 +132,5 @@ export interface EnrichedData {
   track_enduser_ratio: Record<string, TrackEndUserRatio>;
   company_topic_heatmap: CompanyTopicHeatmap;
   events: Array<Record<string, unknown>>;
-  semantic_analysis: SemanticAnalysis;
+  semantic_analysis?: SemanticAnalysis;
 }

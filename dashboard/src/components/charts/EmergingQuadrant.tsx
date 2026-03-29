@@ -43,7 +43,7 @@ export default function EmergingQuadrant({ enriched }: Props) {
 
     // Build maturity map from semantic analysis themes
     const maturityMap: Record<string, number[]> = {};
-    for (const cat of Object.values(enriched.semantic_analysis.per_category)) {
+    for (const cat of Object.values(enriched.semantic_analysis?.per_category ?? {})) {
       for (const theme of cat.themes) {
         const score = MATURITY_SCORE[theme.maturity] ?? 2;
         const key = theme.name.toLowerCase();
