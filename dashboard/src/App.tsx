@@ -27,6 +27,11 @@ import ExperienceLevelDonut from "./components/charts/ExperienceLevelDonut";
 import BigramTable from "./components/tables/BigramTable";
 import SpeakerLeaderboard from "./components/tables/SpeakerLeaderboard";
 import SessionList from "./components/tables/SessionList";
+import NarrativeArc from "./components/narrative/NarrativeArc";
+import MetaThemes from "./components/narrative/MetaThemes";
+import OnesToWatch from "./components/narrative/OnesToWatch";
+import EvolutionSignals from "./components/narrative/EvolutionSignals";
+import UnexpectedAppearances from "./components/narrative/UnexpectedAppearances";
 
 function OverviewTab({ sourceFiltered, filteredEvents }: { sourceFiltered: Event[]; filteredEvents: Event[] }) {
   return (
@@ -64,9 +69,16 @@ function DeepAnalysisTab({ enriched }: { enriched: EnrichedData }) {
 }
 
 function NarrativeTab({ enriched }: { enriched: EnrichedData }) {
+  const { cross_cutting } = enriched.semantic_analysis;
   return (
-    <div className="mt-6 text-gray-500 dark:text-gray-400 text-center py-12">
-      Narrative views coming soon...
+    <div className="mt-6 space-y-6">
+      <NarrativeArc arc={cross_cutting.narrative_arc} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MetaThemes themes={cross_cutting.meta_themes} />
+        <OnesToWatch items={cross_cutting.ones_to_watch} />
+        <EvolutionSignals signals={cross_cutting.evolution_signals} />
+        <UnexpectedAppearances items={cross_cutting.unexpected_appearances} />
+      </div>
     </div>
   );
 }
